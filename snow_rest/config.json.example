@@ -1,0 +1,7 @@
+{
+    "account": "<SNOWFLAKE ACCOUNT>",
+    "user": "<SNOWFLAKE USER>",
+    "password": "<SNOWFLAKE PASSWORD>",
+    "warehouse": "<SNOWFLAKE WAREHOUSE>",
+    "database": "<SNOWFLAKE DATABASE FOR OAG SCHEDULE DATA>"
+}
