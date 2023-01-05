@@ -1,9 +1,9 @@
-# ex_dataapi_docker
-Blog Example for Snowflake Data API in Docker
+# ex_dataapi_python
+Blog Example for Snowflake Data API in Python and Docker
 
 This repository is an example of building a data API on data hosted
 in Snowflake. It accompanies this Medium post describing how to build
-APIs using Docker for Snowflake.
+APIs using Python and Docker for Snowflake.
 
 ## REST API for OAG Flight Schedule data
 This example puts a simple data API to answer some basic questions of
