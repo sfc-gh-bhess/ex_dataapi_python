@@ -1,12 +1,8 @@
 from snowflake.snowpark.functions import col
 import snowflake.snowpark.functions as f
 import json
-import logging
+import sys
 import datetime
-
-# Set Logging Level
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 # Load configuration
 creds = json.load(open('config.json', 'r'))
@@ -20,14 +16,14 @@ def busy_airports(session, begin, end, deparr, nrows):
             d_end = datetime.date.fromisoformat(end)
             df = df.filter((col('FLIGHT_DATE') >= d_begin) & (col('FLIGHT_DATE') <= d_end))
         except ValueError as ex:
-            logger.error('Bad dates provided: ' + str(ex))
+            print('Bad dates provided: ' + str(ex), file=sys.stderr)
             raise ValueError("Error: Bad dates provided")
     deparr = deparr if deparr == 'ARRAPT' else 'DEPAPT'
     try:
         nrows = int(nrows or 20)
     except ValueError as ex:
-        logger.error('nrows must be an integer')
-        raise ValueError('nrows must be an integer')
+        print('nrows must be an integer', file=sys.stderr)
+        raise ValueError('Error: nrows must be an integer')
     df = df.group_by(col(deparr)) \
                     .agg(f.count(deparr).alias('ct')) \
                     .sort(col('ct').desc()) \
@@ -35,8 +31,8 @@ def busy_airports(session, begin, end, deparr, nrows):
     try:
         retval = [x.as_dict() for x in df.to_local_iterator()]
     except Exception as ex:
-        logger.error('Failed to retrieve data frame: ' + str(ex))
-        raise
+        print('Failed to retrieve data frame: ' + str(ex), file=sys.stderr)
+        raise Exception("Error reading from Snowflake. Check the logs for details.")
     return retval
 
 def airport_daily(session, apt, begin, end):
@@ -47,7 +43,7 @@ def airport_daily(session, apt, begin, end):
             d_end = datetime.date.fromisoformat(end)
             df = df.filter((col('FLIGHT_DATE') >= d_begin) & (col('FLIGHT_DATE') <= d_end))
         except ValueError as ex:
-            logger.error('Bad dates provided: ' + str(ex))
+            print('Bad dates provided: ' + str(ex), file=sys.stderr)
             raise ValueError("Error: Bad dates provided")
     df = df.group_by(col('FLIGHT_DATE')) \
         .agg([ \
@@ -58,8 +54,8 @@ def airport_daily(session, apt, begin, end):
     try:
         retval = [x.as_dict() for x in df.to_local_iterator()]
     except Exception as ex:
-        logger.error('Failed to retrieve data frame: ' + str(ex))
-        raise
+        print('Failed to retrieve data frame: ' + str(ex), file=sys.stderr)
+        raise Exception("Error reading from Snowflake. Check the logs for details.")
     return retval
 
 airline_list = {
@@ -78,7 +74,7 @@ def airport_daily_carriers(session, apt, begin, end, deparr):
             d_end = datetime.date.fromisoformat(end)
             df = df.filter((col('FLIGHT_DATE') >= d_begin) & (col('FLIGHT_DATE') <= d_end))
         except ValueError as ex:
-            logger.error('Bad dates provided: ' + str(ex))
+            print('Bad dates provided: ' + str(ex), file=sys.stderr)
             raise ValueError("Error: Bad dates provided")
     deparr = deparr if deparr == 'ARRAPT' else 'DEPAPT'
     df = df.filter(col('CARRIER').isin(list(airline_list.keys()))) \
@@ -89,7 +85,7 @@ def airport_daily_carriers(session, apt, begin, end, deparr):
     try:
         retval = [x.as_dict() for x in df.to_local_iterator()]
     except Exception as ex:
-        logger.error('Failed to retrieve data frame: ' + str(ex))
+        print('Failed to retrieve data frame: ' + str(ex), file=sys.stderr)
         raise Exception("Error reading from Snowflake. Check the logs for details.")
     return retval
 
